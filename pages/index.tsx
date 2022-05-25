@@ -18,20 +18,18 @@ import {
 import type { NextPage } from "next";
 import Head from "next/head";
 import React from "react";
-import { useApiGetStarships } from "../api";
+import { apiGetStarships } from "../api";
 import styles from "../styles/Home.module.css";
 import { StarshipType } from "../types";
 
 const HomeBody = () => {
   const [selectedManufacturer, setSelectedManufacturer] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [starships, setStarships] = React.useState<StarshipType[]>([]);
 
   const onChangeSelect = React.useCallback((event: SelectChangeEvent<any>) => {
     setSelectedManufacturer(event.target.value);
   }, []);
-
-  const [apiGetSharships] = useApiGetStarships();
-  const starships: StarshipType[] =
-    apiGetSharships?.response?.data?.results || [];
 
   const manufacturers = Array.from(
     new Set(
@@ -42,6 +40,21 @@ const HomeBody = () => {
         .filter(({ length }) => length > 4)
     )
   );
+
+  const fetchStarships = React.useCallback(async () => {
+    setIsLoading(true);
+    const starships = await apiGetStarships();
+    setStarships(starships as StarshipType[]);
+    setIsLoading(false);
+  }, []);
+
+  const init = React.useCallback(() => {
+    fetchStarships();
+  }, []);
+
+  React.useEffect(() => {
+    init();
+  }, []);
   return (
     <Grid container spacing={4}>
       <Grid item xs={4}>
@@ -80,14 +93,14 @@ const HomeBody = () => {
             </TableHead>
 
             <TableBody>
-              {apiGetSharships.loading && (
+              {isLoading && (
                 <TableRow>
                   <TableCell rowSpan={2} colSpan={6}>
                     <LinearProgress />
                   </TableCell>
                 </TableRow>
               )}
-              {!apiGetSharships.loading &&
+              {!isLoading &&
                 starships
                   ?.filter(({ manufacturer }: StarshipType) =>
                     manufacturer.includes(selectedManufacturer)
