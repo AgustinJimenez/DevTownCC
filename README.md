@@ -18,6 +18,12 @@ NPM packages other than the StarWars API can be used but are not required to com
 yarn
 ```
 
+##### CREATE ENV FILE
+
+```
+cp .env.local.example .env.local
+```
+
 ##### RUN APP IN DEV MODE
 
 ```
